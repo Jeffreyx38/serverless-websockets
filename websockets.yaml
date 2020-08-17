@@ -1,0 +1,39 @@
+AWSTemplateFormat Version: 2010-09-09
+Transform:
+  - AWS::Serveless
+  - AWS::CodeStar
+
+Parameters:
+  ProjectId:
+    Type: String
+    Description: na
+  CodeDeployRole:
+    Type: String
+    Description: na
+  Stage:
+    Type: String
+    Description: na
+  CustomDomainName:
+    Type: String
+    Description: na
+    Default: 'services.serverlesstech.net'
+Globals:
+  Function:
+    AutoPublishAlias: live
+    DeploymentPreference:
+      Enabled: true
+      Type: Canary10Percent5Minutes
+      Role: !Ref CodeDeployRole
+  
+NATPunchFunction:
+  Type: AWS::Serverless::Function
+  Properties:
+    Handler: natpunch.lambda_handler
+    Runtime: python3.8
+    CodeUri: natpunch.py
+    Layers: [!Ref NATPunchFunctionPythonDependenciesLayer]
+    Role: !GetAtt FNATPunchFunctionRole.Arn
+    Environment:
+      Variables:
+        DB: !Sub 'NATPunchDatabase-${Stage}'
+
